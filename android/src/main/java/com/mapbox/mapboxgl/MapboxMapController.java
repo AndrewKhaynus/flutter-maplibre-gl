@@ -384,10 +384,16 @@ final class MapboxMapController
 
   private void setGeoJsonSource(String sourceName, String geojson) {
     FeatureCollection featureCollection = FeatureCollection.fromJson(geojson);
-    GeoJsonSource geoJsonSource = style.getSourceAs(sourceName);
+
+    GeoJsonSource geoJsonSource = null;
+    if(style != null) {
+      geoJsonSource = style.getSourceAs(sourceName);
+    }
     addedFeaturesByLayer.put(sourceName, featureCollection);
 
-    geoJsonSource.setGeoJson(featureCollection);
+    if (geoJsonSource != null) {
+      geoJsonSource.setGeoJson(featureCollection);
+    }
   }
 
   private void setGeoJsonFeature(String sourceName, String geojsonFeature) {
@@ -404,7 +410,9 @@ final class MapboxMapController
         }
       }
 
-      geoJsonSource.setGeoJson(featureCollection);
+      if (geoJsonSource != null) {
+          geoJsonSource.setGeoJson(featureCollection);
+      }
     }
   }
 
@@ -1600,9 +1608,9 @@ final class MapboxMapController
     mapViewContainer.removeView(mapView);
     mapView.onStop();
     mapView.onDestroy();
-
     if (locationComponent != null) {
-      locationComponent.setLocationComponentEnabled(false);
+//      locationComponent.setLocationComponentEnabled(false);
+      //sometimes produce exceptions. Be careful
     }
     stopListeningForLocationUpdates();
 
@@ -1823,7 +1831,11 @@ final class MapboxMapController
 
   private void updateMyLocationEnabled() {
     if (this.locationComponent == null && myLocationEnabled) {
-      enableLocationComponent(mapboxMap.getStyle());
+      final Style style = mapboxMap.getStyle();
+
+      if (style != null) {
+        enableLocationComponent(style);
+      }
     }
 
     if (myLocationEnabled) {
